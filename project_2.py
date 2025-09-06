@@ -67,11 +67,11 @@ def chipher(text,key,mode='encrypt'):
         text_indexes[i]+=(key_indexes[i%len(key_indexes)]+1)*koef    # <---- вот здесь этот koef только и работает
         text_indexes[i]%=len(alphabet)                             #
         ready_text+=alphabet[text_indexes[i]]                      #
-        if (i+1)%len(key_indexes) == 0:                        # 
-            for j in range(len(key_indexes)):                  # Я не знаю почему эта штука не работает!!!
-                key_indexes[j]*=2                              # Я хотел сделать так чтобы ключ усиливался с каждой итерацией, но в какой то
-                key_indexes[j]%=len(alphabet)                  # момент расшифровка начинает идти не так как надо
-    return ready_text                                           # может быть починю потом
+        if (i+1)%len(key_indexes) == 0:                        
+            for j in range(len(key_indexes)):                  
+                key_indexes[j]*=2                              
+                key_indexes[j]%=len(alphabet)                  
+    return ready_text                                          
 
 
 @bot.message_handler(commands=['start'],content_types=['text','document']) 
