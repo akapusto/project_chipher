@@ -1,4 +1,5 @@
 import telebot
+import re
 #from telegram import escape_markdown
 
 
@@ -66,6 +67,9 @@ def start(message):
     bot.send_message(message.chat.id,  # encrypt и decrypt это зашифровка и расшифровка соответственно
                      'Привет! Этот бот может зашифровать или расшифровать твое сообщение. Попробуй, введя команду /encrypt или /decrypt !'
                      )
+    
+def esc(text): 
+    return re.sub(r'([_*\[\]()~`>#+\-=|{}.!])', r'\\\1', text)
 #
 #
 # весь этот блок - только про зашифровку сообщения
@@ -89,12 +93,15 @@ def ask_for_text(message):
     bot.send_message(message.chat.id, 'Вижу твой текст! Скинь теперь ключ, по которому я буду его шифровать.')
     bot.register_next_step_handler(message,ask_for_key)
 
+    
+
 def ask_for_key(message):
     global key
     key=message.text
     bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
     bot.send_message(message.chat.id, 'Отлично! Вот твой зашифрованный текст:')
-    bot.send_message(message.chat.id, encode(encrypted_text,key,"encrypt"))
+    text = encode(encrypted_text,key,'encrypt')
+    bot.send_message(message.chat.id, f"||{ esc(text) }||", parse_mode = "MarkdownV2")
 #
 #
 #
@@ -111,7 +118,7 @@ def ask_for_text2(message):
     global decrypted_text
     decrypted_text = message.text
     bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
-    #bot.send_message(message.chat.id, 'Вижу твой текст! Скинь теперь ключ, по которому я буду его расшифровывать.')
+    bot.send_message(message.chat.id, 'Вижу твой текст! Скинь теперь ключ, по которому я буду его расшифровывать.')
     bot.register_next_step_handler(message,ask_for_key2)
 
 
@@ -120,7 +127,8 @@ def ask_for_key2(message):
     key=message.text
     bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
     bot.send_message(message.chat.id, 'Отлично! Вот твой расшифрованный текст:')
-    bot.send_message(message.chat.id, f"||{encode(decrypted_text,key,"decrypt")}||", parse_mode = "MarkdownV2")
+    text = encode(decrypted_text,key,'decrypt')
+    bot.send_message(message.chat.id, f"||{ esc(text) }||", parse_mode = "MarkdownV2")
 #
 #
 #
