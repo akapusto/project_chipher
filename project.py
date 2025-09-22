@@ -1,4 +1,5 @@
 import telebot
+#from telegram import escape_markdown
 
 
 token = ('8444389234:AAFRPlz74LySLomLc7-qLGp9v272mtaUhVI')
@@ -33,12 +34,18 @@ alphabet = ['(', '%', 'h', 'W', 'ч', "'", '}', ']', 'U', #
             'Ё', 'Ч', 'Б', 'о', 'y', 'ъ', 'u', 'c', 'м', #
             'я', 'M', 'Ж', 'n', 'г',                 #
             #'`','*','~','_',                            #
-            ]                   #
+            ]   
 
 
 
 
-def encode(text,key,mode='encrypt'):                                              #
+def encode(text,key, mode):
+    if mode == "encrypt":
+        a = 1
+    elif mode == "decrypt":
+        a = -1
+    else:
+        return "Error 404"                                              # decode function
     ready_text = ''                                                #  
     text_indexes = []                                              #
     key_indexes = []                                               #
@@ -47,9 +54,9 @@ def encode(text,key,mode='encrypt'):                                            
     for letter in key:                                             #
         key_indexes.append(alphabet.index(letter))                 #
     for i in range(len(text_indexes)):                             #
-        text_indexes[i]+=key_indexes[i%len(key_indexes)]           #
+        text_indexes[i]+=key_indexes[i%len(key_indexes)]*a           #
         ready_text+=alphabet[text_indexes[i]%len(alphabet)]        #
-    return ready_text                                              #
+    return ready_text                                           #
 
 
 
@@ -64,25 +71,30 @@ def start(message):
 # весь этот блок - только про зашифровку сообщения
 #
 #
-@bot.message_handler(command=['encrypt'])
-def encrypt(message):
-   bot.register_next_step_handler(message,ask_for_text)
-   bot.reply_to(message,'Выбрана зашифровка. Скинь теперь свой текст, который я должен зашифровать.')
-   ...
-@bot.message_handler(func=encrypt) #func=encrypt значит, что этот handler будет выполняться только тогда, когда будет вызвана функция encrypt
+@bot.message_handler(commands=['encrypt', 'decrypt'])
+def mode_choice(message):
+    if message.text == '/encrypt':
+        bot.register_next_step_handler(message,ask_for_text)
+        bot.send_message(message.chat.id,'Выбрана зашифровка. Скинь теперь свой текст, который я должен зашифровать.')
+        
+    elif message.text == '/decrypt':
+        bot.register_next_step_handler(message,ask_for_text2)
+        bot.send_message(message.chat.id,'Выбрана расшифровка. Скинь теперь свой текст, который я должен расшифровать.')
+        
+
 def ask_for_text(message):
     global encrypted_text
     encrypted_text = message.text
-    bot.reply_to(message, 'Вижу твой текст! Скинь теперь ключ, по которому я буду его шифровать.')
+    bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+    bot.send_message(message.chat.id, 'Вижу твой текст! Скинь теперь ключ, по которому я буду его шифровать.')
     bot.register_next_step_handler(message,ask_for_key)
 
-
-@bot.message_handler(message=True)
 def ask_for_key(message):
     global key
     key=message.text
+    bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
     bot.send_message(message.chat.id, 'Отлично! Вот твой зашифрованный текст:')
-    bot.send_message(message.chat.id, encode(encrypted_text,key))
+    bot.send_message(message.chat.id, encode(encrypted_text,key,"encrypt"))
 #
 #
 #
@@ -90,8 +102,30 @@ def ask_for_key(message):
 #
 
 
+#
+#
+# весь этот блок - только про расшифровку сообщения
+#
+#
+def ask_for_text2(message):
+    global decrypted_text
+    decrypted_text = message.text
+    bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+    #bot.send_message(message.chat.id, 'Вижу твой текст! Скинь теперь ключ, по которому я буду его расшифровывать.')
+    bot.register_next_step_handler(message,ask_for_key2)
 
 
+def ask_for_key2(message):
+    global key
+    key=message.text
+    bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+    bot.send_message(message.chat.id, 'Отлично! Вот твой расшифрованный текст:')
+    bot.send_message(message.chat.id, f"||{encode(decrypted_text,key,"decrypt")}||", parse_mode = "MarkdownV2")
+#
+#
+#
+#
+#
 
 
 bot.polling(none_stop=True, interval=0) # это должно стоять в самом конце, это mainloop
