@@ -1,6 +1,5 @@
 import telebot
 import re
-#from telegram import escape_markdown
 
 
 token = ('8444389234:AAFRPlz74LySLomLc7-qLGp9v272mtaUhVI')
@@ -33,7 +32,7 @@ alphabet = ['(', '%', 'h', 'W', 'ч', "'", '}', ']', 'U', #
             ')', 'х', 'Y', ';', 'p', '#', 'т', 'И', 'Я', #
             'л', 'ф', 'b', 'Q', 'и', 'f', '"', 'X', '8', #
             'Ё', 'Ч', 'Б', 'о', 'y', 'ъ', 'u', 'c', 'м', #
-            'я', 'M', 'Ж', 'n', 'г',                 #
+            'я', 'M', 'Ж', 'n', 'г',                     #
             #'`','*','~','_',                            #
             ]   
 
@@ -46,7 +45,7 @@ def encode(text,key, mode):
     elif mode == "decrypt":
         a = -1
     else:
-        return "Error 404"                                              # decode function
+        return "Error 404"                                         # decode function
     ready_text = ''                                                #  
     text_indexes = []                                              #
     key_indexes = []                                               #
@@ -55,18 +54,10 @@ def encode(text,key, mode):
     for letter in key:                                             #
         key_indexes.append(alphabet.index(letter))                 #
     for i in range(len(text_indexes)):                             #
-        text_indexes[i]+=key_indexes[i%len(key_indexes)]*a           #
+        text_indexes[i]+=key_indexes[i%len(key_indexes)]*a         #
         ready_text+=alphabet[text_indexes[i]%len(alphabet)]        #
-    return ready_text                                           #
+    return ready_text                                              #
 
-
-
-
-@bot.message_handler(commands=['start'])
-def start(message):
-    bot.send_message(message.chat.id,  # encrypt и decrypt это зашифровка и расшифровка соответственно
-                     'Привет! Этот бот может зашифровать или расшифровать твое сообщение. Попробуй, введя команду /encrypt или /decrypt !'
-                     )
     
 def esc(text): 
     return re.sub(r'([_*\[\]()~`>#+\-=|{}.!])', r'\\\1', text)
@@ -75,7 +66,7 @@ def esc(text):
 # весь этот блок - только про зашифровку сообщения
 #
 #
-@bot.message_handler(commands=['encrypt', 'decrypt'])
+@bot.message_handler(commands=['encrypt', 'decrypt','start'])
 def mode_choice(message):
     if message.text == '/encrypt':
         bot.register_next_step_handler(message,ask_for_text)
@@ -84,6 +75,10 @@ def mode_choice(message):
     elif message.text == '/decrypt':
         bot.register_next_step_handler(message,ask_for_text2)
         bot.send_message(message.chat.id,'Выбрана расшифровка. Скинь теперь свой текст, который я должен расшифровать.')
+    elif message.text == '/start':
+        bot.send_message(message.chat.id,  # encrypt и decrypt это зашифровка и расшифровка соответственно
+                     'Привет! Этот бот может зашифровать или расшифровать твое сообщение. Попробуй, введя команду /encrypt или /decrypt !'
+                     )
         
 
 def ask_for_text(message):
